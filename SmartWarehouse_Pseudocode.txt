@@ -1,0 +1,103 @@
+===================================================
+  SMART WAREHOUSE SYSTEM - PSEUDOCODE
+===================================================
+
+// ==========================================
+// 1. Binary Tree Operations (Zones & Inventory)
+// ==========================================
+
+START Add Zone (zName, pName, qty)
+    IF tree is empty:
+        CREATE root node with zName, pName, qty
+        RETURN
+    ELSE:
+        ASK user: "Add to Left or Right?"
+        IF user chooses Left:
+            IF left child is empty:
+                PLACE new zone as left child
+            ELSE:
+                MOVE down to left child and REPEAT process
+        ELSE IF user chooses Right:
+            IF right child is empty:
+                PLACE new zone as right child
+            ELSE:
+                MOVE down to right child and REPEAT process
+END
+
+START Search Product (node, pName)
+    IF current node is empty:
+        RETURN not found (NULL)
+    
+    IF node's product matches pName AND quantity > 0:
+        RETURN current node
+        
+    result = Search left (node's left child, pName)
+    IF result is found:
+        RETURN result
+    ELSE:
+        RETURN Search right (node's right child, pName)
+END
+
+START Display Tree (node)
+    IF node is NOT empty:
+        SHOW current zone name, product, and quantity
+        Display Tree (node's left child)
+        Display Tree (node's right child)
+END
+
+// ==========================================
+// 2. Linked List Operations (Customer Orders)
+// ==========================================
+
+START Add Order (customerName, pName)
+    CREATE new Order Node with customerName and pName
+    IF list is empty (head is NULL):
+        MAKE the new node the first (head) and last (tail)
+    ELSE:
+        ADD the new node at the end (tail's next = new node)
+        UPDATE tail to be the new node
+END
+
+START Get Next Order
+    RETURN the first order (head)
+END
+
+START Remove Order
+    IF list is NOT empty (head is NOT NULL):
+        temp = head
+        head = head's next
+        IF head is NULL:
+            tail = NULL
+        DELETE temp
+END
+
+START Display Orders
+    IF list is empty:
+        SHOW "No pending orders message"
+    ELSE:
+        current = head
+        WHILE current is NOT NULL:
+            SHOW current order details
+            current = current's next
+END
+
+// ==========================================
+// 3. Fulfill Order Logic (Combining Tree and List)
+// ==========================================
+
+START Process Next Order
+    order = Get Next Order()
+    IF no order (order is NULL):
+        SHOW "Error: No pending orders"
+        RETURN
+        
+    foundZone = Search Product(root, order's requested product)
+    
+    IF foundZone is found:
+        REDUCE foundZone's quantity by 1
+        SHOW "SUCCESS: Item dispatched"
+    ELSE:
+        SHOW "ERROR: Item not available"
+        
+    Remove Order()
+END

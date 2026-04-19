@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Warehouse | Pro Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --accent: #f093fb;
+            --success: #00ff87;
+            --danger: #fe4f4f;
+            --bg-dark: #070b14;
+            --glass-bg: rgba(15, 23, 42, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --panel-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: url('warehouse_dashboard_bg_1776637558162.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Navigation */
+        header {
+            height: 70px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 24px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .role-selector {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .role-btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .role-btn.active {
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+        }
+
+        /* Layout */
+        main {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: var(--panel-shadow);
+        }
+
+        /* Sidebar View */
+        .sidebar {
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .view-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+        }
+
+        /* Forms & Inputs */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        button {
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary { background: var(--secondary); color: #000; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3); }
+
+        .btn-success { background: var(--success); color: #000; }
+        .btn-danger { background: var(--danger); color: white; }
+
+        /* Tree Visualization */
+        .tree-container {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(0, 242, 254, 0.05), transparent);
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+        }
+
+        .tree ul {
+            padding-top: 20px;
+            position: relative;
+            transition: all 0.5s;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tree li {
+            float: left;
+            text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 10px 0 10px;
+            transition: all 0.5s;
+        }
+
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 50%;
+            border-top: 2px solid var(--glass-border);
+            width: 50%;
+            height: 20px;
+        }
+
+        .tree li::after {
+            right: auto;
+            left: 50%;
+            border-left: 2px solid var(--glass-border);
+        }
+
+        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+        .tree li:last-child::before { border-right: 2px solid var(--glass-border); border-radius: 0 5px 0 0; }
+        .tree li:first-child::after { border-radius: 5px 0 0 0; }
+        .tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid var(--glass-border); width: 0; height: 20px; }
+
+        .tree-node {
+            border: 1px solid var(--glass-border);
+            background: rgba(15, 23, 42, 0.8);
+            padding: 12px;
+            border-radius: 16px;
+            min-width: 130px;
+            transition: 0.3s;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tree-node:hover {
+            border-color: var(--primary);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+        }
+
+        .tree-node.selected { border-color: var(--accent); background: rgba(240, 147, 251, 0.1); }
+
+        .tree-node .node-title { font-weight: 700; color: var(--primary); font-size: 14px; margin-bottom: 4px; }
+        .tree-node .node-item { font-size: 12px; color: #ccc; }
+        .tree-node .node-qty { font-family: 'JetBrains Mono'; color: var(--success); font-weight: bold; font-size: 14px; margin-top: 5px; }
+
+        /* Store Catalog */
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 15px;
+            transition: 0.3s;
+        }
+
+        .product-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .product-card h3 { font-size: 16px; margin-bottom: 5px; }
+        .product-card .price { color: var(--primary); font-weight: bold; display: block; margin-bottom: 10px; }
+        
+        .qty-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .qty-picker input { padding: 5px; width: 60px; text-align: center; }
+
+        /* Cart & Orders */
+        .order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+
+        .order-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 16px;
+            border-left: 4px solid var(--primary);
+            animation: slideIn 0.3s ease;
+        }
+
+        .order-card.manager-view {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Log */
+        .log-container {
+            height: 150px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 16px;
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            overflow-y: auto;
+            color: #888;
+        }
+
+        .log-entry.system { color: var(--secondary); }
+        .log-entry.success { color: var(--success); }
+        .log-entry.error { color: var(--danger); }
+
+        /* Utils */
+        .hidden { display: none !important; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">SMART WAREHOUSE <span style="font-weight: 300; opacity: 0.5;">v2.0</span></div>
+        <div class="role-selector">
+            <button class="role-btn active" onclick="switchRole('manager')">🛠️ MANAGER</button>
+            <button class="role-btn" onclick="switchRole('customer')">🛒 CUSTOMER</button>
+        </div>
+    </header>
+
+    <main>
+        
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            
+            <!-- Manager Controls -->
+            <div id="managerSidebar" class="glass-panel">
+                <h2>📦 Add Inventory</h2>
+                <div class="control-group">
+                    <label style="font-size: 12px; color: #888;">Target Parent Zone</label>
+                    <select id="parentSelect">
+                        <option value="root">Main Entrance (Root)</option>
+                    </select>
+                    <input type="text" id="zoneName" placeholder="New Zone Name (e.g. A-102)">
+                    <input type="text" id="prodName" placeholder="Product Name">
+                    <input type="number" id="prodQty" placeholder="Initial Quantity" min="1">
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-primary" onclick="addNode('left')" style="flex:1;">Left Branch</button>
+                        <button class="btn-primary" onclick="addNode('right')" style="flex:1; background: var(--accent);">Right Branch</button>
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 20px 0;">
+                
+                <div class="control-group">
+                    <button class="btn-danger" onclick="removeSelected()">🗑️ Delete Selected Zone</button>
+                </div>
+            </div>
+
+            <!-- Customer Controls -->
+            <div id="customerSidebar" class="glass-panel hidden">
+                <h2>👤 Your Account</h2>
+                <div class="control-group">
+                    <input type="text" id="custName" placeholder="Full Name">
+                </div>
+                
+                <h2 style="margin-top: 20px;">🛒 My Cart (<span id="cartCount">0</span>)</h2>
+                <div id="cartList" class="order-list" style="max-height: 200px; margin-bottom: 15px;">
+                    <div style="text-align: center; opacity: 0.5; padding: 20px;">Cart is empty</div>
+                </div>
+                
+                <button class="btn-success" onclick="submitOrderBatch()" style="width: 100%;">🚀 PLACE ORDER</button>
+            </div>
+
+            <!-- Global Logs -->
+            <div class="glass-panel" style="flex: 1;">
+                <h2>📜 Operational Log</h2>
+                <div id="sysLog" class="log-container">
+                    <div class="log-entry system">[SYSTEM] Hardware synchronized. Waiting for input...</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MAIN VIEW CONTENT -->
+        <div class="view-content">
+            
+            <!-- Manager Tree View -->
+            <div id="managerView" class="glass-panel tree-container">
+                <div class="tree" id="treeRoot">
+                    <!-- Tree rendered here -->
+                </div>
+            </div>
+
+            <!-- Customer Store View -->
+            <div id="customerView" class="glass-panel hidden" style="flex:1; display:flex; flex-direction:column;">
+                <h2>🛍️ Available Products</h2>
+                <div id="storeCatalog" class="catalog-grid">
+                    <!-- Catalog cards here -->
+                </div>
+            </div>
+
+            <!-- Bottom Dashboard (Manager Only) -->
+            <div id="managerDash" class="glass-panel" style="height: 250px; display: flex; flex-direction: column;">
+                <h2>🔔 Incoming Requests</h2>
+                <div id="pendingOrders" class="order-list" style="flex:1;">
+                    <div style="text-align: center; opacity: 0.5; padding: 30px;">No pending customer requests</div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        /* ==========================================
+           CORE STATE
+           ========================================== */
+        let tree = {
+            id: 'root',
+            name: 'Root Entrance',
+            item: 'Gateway',
+            qty: 0,
+            left: null,
+            right: null
+        };
+
+        let selectedNodeId = 'root';
+        let orders = []; // List of {customer, items: [{name, qty}]}
+        let cart = []; // Current customer's cart
+        let activeRole = 'manager';
+
+        /* ==========================================
+           UI HANDLERS
+           ========================================== */
+        function switchRole(role) {
+            activeRole = role;
+            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if(role === 'customer') {
+                document.getElementById('managerSidebar').classList.add('hidden');
+                document.getElementById('managerView').classList.add('hidden');
+                document.getElementById('managerDash').classList.add('hidden');
+                
+                document.getElementById('customerSidebar').classList.remove('hidden');
+                document.getElementById('customerView').classList.remove('hidden');
+                renderCatalog();
+            } else {
+                document.getElementById('customerSidebar').classList.add('hidden');
+                document.getElementById('customerView').classList.add('hidden');
+                
+                document.getElementById('managerSidebar').classList.remove('hidden');
+                document.getElementById('managerView').classList.remove('hidden');
+                document.getElementById('managerDash').classList.remove('hidden');
+                renderTree();
+            }
+        }
+
+        function addLog(msg, type = 'system') {
+            const log = document.getElementById('sysLog');
+            const date = new Date().toLocaleTimeString();
+            log.innerHTML += `<div class="log-entry ${type}">[${date}] ${msg}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        /* ==========================================
+           WAREHOUSE LOGIC
+           ========================================== */
+        function renderTree() {
+            const container = document.getElementById('treeRoot');
+            container.innerHTML = `<ul>${buildNodeHTML(tree)}</ul>`;
+            updateParentSelect();
+        }
+
+        function buildNodeHTML(node) {
+            if(!node) return '';
+            const isSelected = selectedNodeId === node.id ? 'selected' : '';
+            let html = `<li>
+                <div class="tree-node ${isSelected}" onclick="selectNode('${node.id}')">
+                    <div class="node-title">${node.name}</div>
+                    <div class="node-item">${node.item}</div>
+                    <div class="node-qty">QTY: ${node.qty}</div>
+                </div>`;
+            
+            if(node.left || node.right) {
+                html += '<ul>';
+                html += buildNodeHTML(node.left) || '<li><div style="opacity:0.1; font-size:10px;">empty</div></li>';
+                html += buildNodeHTML(node.right) || '<li><div style="opacity:0.1; font-size:10px;">empty</div></li>';
+                html += '</ul>';
+            }
+            html += '</li>';
+            return html;
+        }
+
+        function selectNode(id) {
+            selectedNodeId = id;
+            document.getElementById('parentSelect').value = id;
+            renderTree();
+        }
+
+        function findNode(node, id) {
+            if(!node) return null;
+            if(node.id === id) return node;
+            return findNode(node.left, id) || findNode(node.right, id);
+        }
+
+        function addNode(side) {
+            const name = document.getElementById('zoneName').value.trim();
+            const product = document.getElementById('prodName').value.trim();
+            const qty = parseInt(document.getElementById('prodQty').value) || 0;
+            const parentId = document.getElementById('parentSelect').value;
+
+            if(!name || !product) return alert("Please fill all fields");
+
+            const parentNode = findNode(tree, parentId);
+            const newNode = {
+                id: 'node_' + Date.now(),
+                name, item: product, qty,
+                left: null, right: null
+            };
+
+            if(side === 'left') {
+                if(parentNode.left) return alert("Left branch occupied");
+                parentNode.left = newNode;
+            } else {
+                if(parentNode.right) return alert("Right branch occupied");
+                parentNode.right = newNode;
+            }
+
+            addLog(`Inserted Zone ${name} with ${qty}x ${product}`, 'success');
+            renderTree();
+            document.getElementById('zoneName').value = '';
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodQty').value = '';
+        }
+
+        function removeSelected() {
+            if(selectedNodeId === 'root') return alert("Root entry cannot be removed");
+            
+            function del(node, id) {
+                if(!node) return false;
+                if(node.left && node.left.id === id) { node.left = null; return true; }
+                if(node.right && node.right.id === id) { node.right = null; return true; }
+                return del(node.left, id) || del(node.right, id);
+            }
+
+            del(tree, selectedNodeId);
+            selectedNodeId = 'root';
+            renderTree();
+            addLog("Branch deleted effectively.", "error");
+        }
+
+        function updateParentSelect() {
+            const select = document.getElementById('parentSelect');
+            const current = select.value;
+            select.innerHTML = '';
+            
+            function traverse(node) {
+                if(!node) return;
+                const opt = document.createElement('option');
+                opt.value = node.id;
+                opt.innerText = node.name;
+                select.appendChild(opt);
+                traverse(node.left);
+                traverse(node.right);
+            }
+            traverse(tree);
+            select.value = current;
+        }
+
+        /* ==========================================
+           CUSTOMER LOGIC
+           ========================================== */
+        function renderCatalog() {
+            const catalog = document.getElementById('storeCatalog');
+            catalog.innerHTML = '';
+            
+            let items = [];
+            function traverse(node) {
+                if(!node) return;
+                if(node.item !== 'Gateway' && node.qty > 0) {
+                    // Group similar items if they exist in multiple zones
+                    let existing = items.find(i => i.name === node.item);
+                    if(existing) existing.stock += node.qty;
+                    else items.push({ name: node.item, stock: node.qty });
+                }
+                traverse(node.left);
+                traverse(node.right);
+            }
+            traverse(tree);
+
+            if(items.length === 0) {
+                catalog.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:50px; opacity:0.5;">Warehouse currently out of stock</div>';
+                return;
+            }
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <span class="price">INSTOCK: ${item.stock}</span>
+                    <div class="qty-picker">
+                        <input type="number" id="qty_${item.name}" value="1" min="1" max="${item.stock}">
+                        <button class="btn-primary" onclick="addToCart('${item.name}', ${item.stock})">ADD</button>
+                    </div>
+                `;
+                catalog.appendChild(card);
+            });
+        }
+
+        function addToCart(name, stock) {
+            const qty = parseInt(document.getElementById('qty_' + name).value);
+            if(qty > stock) return alert("Not enough stock!");
+            
+            const existing = cart.find(i => i.name === name);
+            if(existing) existing.qty += qty;
+            else cart.push({ name, qty });
+
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cartList');
+            document.getElementById('cartCount').innerText = cart.length;
+            list.innerHTML = '';
+            
+            if(cart.length === 0) {
+                list.innerHTML = '<div style="text-align: center; opacity: 0.5; padding: 20px;">Cart is empty</div>';
+                return;
+            }
+
+            cart.forEach((item, idx) => {
+                list.innerHTML += `
+                    <div class="order-card" style="border-color: var(--accent);">
+                        <div style="display:flex; justify-content:space-between;">
+                            <b>${item.name}</b>
+                            <span>${item.qty} pcs</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function submitOrderBatch() {
+            const name = document.getElementById('custName').value.trim();
+            if(!name) return alert("Enter your name first!");
+            if(cart.length === 0) return alert("Cart is empty!");
+
+            const order = {
+                id: Date.now(),
+                customer: name,
+                items: [...cart]
+            };
+
+            orders.push(order);
+            cart = [];
+            updateCartUI();
+            addLog(`Order placed by ${name} for ${order.items.length} unique products.`, 'success');
+            renderPendingOrders();
+        }
+
+        /* ==========================================
+           DISPATCH LOGIC (MANAGER)
+           ========================================== */
+        function renderPendingOrders() {
+            const list = document.getElementById('pendingOrders');
+            list.innerHTML = '';
+
+            if(orders.length === 0) {
+                list.innerHTML = '<div style="text-align: center; opacity: 0.5; padding: 30px;">No pending customer requests</div>';
+                return;
+            }
+
+            orders.forEach(order => {
+                const card = document.createElement('div');
+                card.className = 'order-card manager-view';
+                card.innerHTML = `
+                    <div>
+                        <b style="color:var(--primary)">${order.customer}</b><br>
+                        <small style="color:#aaa;">${order.items.map(i => `${i.qty}x ${i.name}`).join(', ')}</small>
+                    </div>
+                    <button class="btn-success" onclick="processOrder(${order.id})" style="padding: 5px 15px; font-size:12px;">PROCESS</button>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function processOrder(orderId) {
+            const orderIdx = orders.findIndex(o => o.id === orderId);
+            const order = orders[orderIdx];
+            
+            addLog(`Processing order for ${order.customer}...`, 'system');
+            
+            let allSuccess = true;
+            order.items.forEach(requestedItem => {
+                const node = searchAndDecrement(tree, requestedItem.name, requestedItem.qty);
+                if(!node) {
+                    addLog(`Stock failure for ${requestedItem.name}!`, 'error');
+                    allSuccess = false;
+                }
+            });
+
+            if(allSuccess) {
+                addLog(`Order #${orderId} fulfilled and dispatched!`, 'success');
+            } else {
+                addLog(`Order #${orderId} completed with partial stock errors.`, 'error');
+            }
+
+            orders.splice(orderIdx, 1);
+            renderPendingOrders();
+            renderTree();
+        }
+
+        function searchAndDecrement(node, itemName, requestedQty) {
+            if(!node) return null;
+            if(node.item.toLowerCase() === itemName.toLowerCase() && node.qty >= requestedQty) {
+                node.qty -= requestedQty;
+                return node;
+            }
+            return searchAndDecrement(node.left, itemName, requestedQty) || 
+                   searchAndDecrement(node.right, itemName, requestedQty);
+        }
+
+        // Init
+        renderTree();
+
+    </script>
+</body>
+</html>
+als();
+
+    </script>
+</body>
+</html>

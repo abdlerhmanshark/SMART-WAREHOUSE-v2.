@@ -1,0 +1,12 @@
+# Compiled Binary Files
+*.exe
+*.o
+*.obj
+
+# Temp files
+tempCodeRunnerFile.cpp
+tempCodeRunnerFile.exe
+
+# OS generated files
+.DS_Store
+Thumbs.db
